@@ -5,8 +5,9 @@ import type React from "react"
 import { useEffect, useRef, useState } from "react"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { Send, Volume2, Square, Sparkles, StopCircle } from "lucide-react"
+import { Send, Volume2, Square, Sparkles, StopCircle, Mic } from "lucide-react"
 import type { Note, Todo } from "@/lib/types"
+import { VoiceConversation } from "@/components/voice-conversation"
 
 const SUGGESTIONS = [
   "What's pending today?",
@@ -33,6 +34,7 @@ export function AiCompanion({
   })
   const [input, setInput] = useState("")
   const [speakingId, setSpeakingId] = useState<string | null>(null)
+  const [voiceMode, setVoiceMode] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const busy = status === "submitted" || status === "streaming"
@@ -98,11 +100,27 @@ export function AiCompanion({
         <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary">
           <Sparkles className="h-4 w-4" />
         </span>
-        <div>
+        <div className="flex-1">
           <h2 className="font-display text-lg font-semibold leading-none tracking-tight">Quiet</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">Your notes &amp; tasks companion</p>
         </div>
+        {!voiceMode && (
+          <button
+            onClick={() => setVoiceMode(true)}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40"
+            aria-label="Start a live voice conversation"
+          >
+            <Mic className="h-3.5 w-3.5 text-primary" /> Talk
+          </button>
+        )}
       </div>
+
+      {voiceMode ? (
+        <div className="flex-1">
+          <VoiceConversation notes={notes} todos={todos} onClose={() => setVoiceMode(false)} />
+        </div>
+      ) : (
+        <>
 
       <div ref={scrollRef} className="-mr-1 flex-1 space-y-4 overflow-y-auto pr-1">
         {messages.length === 0 ? (
@@ -205,6 +223,8 @@ export function AiCompanion({
           )}
         </div>
       </form>
+        </>
+      )}
     </div>
   )
 }
